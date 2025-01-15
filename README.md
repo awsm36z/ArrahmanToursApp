@@ -1,79 +1,139 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Arrahman Tours App
 
-# Getting Started
+## Overview
+The **Arrahman Tours App** is a React Native-based mobile application designed to assist Muslims during their Hajj and Umrah journeys. With a focus on accessibility and simplicity, the app provides both real-time and offline features, enabling pilgrims to follow guided steps, listen to Du'aa recitations, and access necessary resources with ease.
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+## Purpose
+This app aims to bridge the gap between technology and spiritual fulfillment by delivering:
+- Real-time **Du'aa streaming** from Imams during rituals.
+- Offline support for pre-recorded Du'aa.
+- Step-by-step guidance for completing Hajj and Umrah rituals.
+- Easy access to resources like maps, schedules, and prayer reminders.
 
-## Step 1: Start the Metro Server
+## Features
+### MVP (Minimum Viable Product)
+1. **Synchronous Du'aa Audio**:
+   - Real-time streaming of Du'aa using WebRTC.
+   - Text overlay for reading along with the recitation.
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+2. **Asynchronous Du'aa Audio**:
+   - Downloadable audio files for offline playback.
+   - Text-based Du'aa available alongside audio.
 
-To start Metro, run the following command from the _root_ of your React Native project:
+3. **Step-by-Step Ritual Guide**:
+   - Simplified instructions for Hajj and Umrah rituals.
+   - Integration of prayer times and locations.
 
-```bash
-# using npm
-npm start
+4. **Multi-Language Support**:
+   - Initial support for English and Arabic.
 
-# OR using Yarn
-yarn start
+5. **Firebase Integration**:
+   - Firestore for storing metadata (Du'aa titles, timestamps, etc.).
+   - Cloud Storage for audio files.
+   - Authentication for user-specific settings (optional).
+
+## Technology Stack
+### Frontend
+- **React Native**: Cross-platform mobile development.
+- **React Navigation**: For handling app navigation.
+
+### Backend
+- **Firebase**:
+  - Firestore: NoSQL database for real-time data.
+  - Cloud Storage: For hosting pre-recorded Du'aa audio.
+  - Authentication: Optional for personalized user experiences.
+
+### Real-Time Features
+- **WebRTC**: For live streaming of Du'aa recitations.
+- **Firebase Realtime Database**: Optional as a signaling server for WebRTC.
+
+### Additional Tools
+- **Expo**: For quick prototyping and testing.
+- **react-native-sound** or **expo-av**: For audio playback.
+- **react-native-fs**: For offline file management.
+
+## Development Workflow
+### Setup
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/awsm36z/ArrahmanToursApp.git
+   ```
+2. Navigate to the project directory:
+   ```bash
+   cd ArrahmanToursApp
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Install CocoaPods dependencies for iOS:
+   ```bash
+   cd ios && pod install && cd ..
+   ```
+5. Start the development server:
+   ```bash
+   npm run start
+   ```
+
+### Running the App
+- **iOS**:
+  ```bash
+  npm run ios
+  ```
+- **Android**:
+  ```bash
+  npm run android
+  ```
+
+## File Structure
+```
+ArrahmanToursApp/
+├── android/              # Android project files
+├── ios/                  # iOS project files
+├── src/                  # Source code for the app
+│   ├── components/       # Reusable UI components
+│   ├── screens/          # App screens (Home, Du'aa, Settings, etc.)
+│   ├── services/         # Firebase and WebRTC integrations
+│   └── utils/            # Utility functions
+├── assets/               # Images, audio, and other static files
+├── App.js                # Main app entry point
+├── package.json          # Dependency definitions
+└── README.md             # Project documentation
 ```
 
-## Step 2: Start your Application
+## Firebase Configuration
+1. Download the `google-services.json` file for Android and place it in:
+   ```
+   android/app/
+   ```
+2. Download the `GoogleService-Info.plist` file for iOS and place it in:
+   ```
+   ios/<YourProjectName>/
+   ```
+3. Ensure Firebase modules are installed:
+   ```bash
+   npm install @react-native-firebase/app @react-native-firebase/firestore @react-native-firebase/storage
+   ```
 
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
+## Contributing
+1. Fork the repository and create your feature branch:
+   ```bash
+   git checkout -b feature/your-feature
+   ```
+2. Commit your changes:
+   ```bash
+   git commit -m "Add some feature"
+   ```
+3. Push to the branch:
+   ```bash
+   git push origin feature/your-feature
+   ```
+4. Open a pull request.
 
-### For Android
+## License
+This project is licensed under the MIT License. See the `LICENSE` file for details.
 
-```bash
-# using npm
-npm run android
-
-# OR using Yarn
-yarn android
-```
-
-### For iOS
-
-```bash
-# using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
-
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
-
-## Step 3: Modifying your App
-
-Now that you have successfully run the app, let's modify it.
-
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
-
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+## Contact
+For questions or feedback, reach out to the development team at: 
+- **Project Manager**: Mubasheer
+- **GitHub Issues**: [https://github.com/awsm36z/ArrahmanToursApp/issues](https://github.com/awsm36z/ArrahmanToursApp/issues)
