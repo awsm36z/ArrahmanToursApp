@@ -72,3 +72,7 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+#private files for firebase
+ios/ArrahmanTourApp/GoogleService-Info.plist
+android/app/google-services.json
