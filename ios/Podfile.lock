@@ -1528,6 +1528,11 @@ PODS:
   - RNFBApp (21.7.0):
     - Firebase/CoreOnly (= 11.7.0)
     - React-Core
+  - RNSound (0.11.2):
+    - React-Core
+    - RNSound/Core (= 0.11.2)
+  - RNSound/Core (0.11.2):
+    - React-Core
   - SocketRocket (0.7.1)
   - Yoga (0.0.0)
 
@@ -1597,6 +1602,7 @@ DEPENDENCIES:
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
+  - RNSound (from `../node_modules/react-native-sound`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -1735,6 +1741,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   RNFBApp:
     :path: "../node_modules/@react-native-firebase/app"
+  RNSound:
+    :path: "../node_modules/react-native-sound"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -1806,6 +1814,7 @@ SPEC CHECKSUMS:
   ReactCodegen: 2f96de87b7680e294a46fc52b4399d51ec90cb6b
   ReactCommon: 09e5005e0ea50a4e36f412990212140e5b8f1db3
   RNFBApp: 8fa507c28406d26386fd0c1149a1475c3521d0de
+  RNSound: 314cc5226453ef4a3314a196c65e8a65e5106a7b
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: fd4ca32b81c4069b4175ad9460b042e17db94b66
 
