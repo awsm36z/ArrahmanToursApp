@@ -3,11 +3,11 @@ import { View, StyleSheet, Text } from 'react-native';
 import SoundPlayer from '../components/soundPlayer'
 
 
-const HomeScreen = () => {
+const HomeScreen = ({navigation, props}) => {
     return (
         <View style={styles.container}>
             {/* <SoundPlayer soundFile="intro.mp3" /> */}
-            <Text>Empty Home Screen</Text>
+            <Text>BYYYYY {props.user.email}</Text>
         </View>
     );
 };
