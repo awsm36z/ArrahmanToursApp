@@ -52,7 +52,7 @@ const EmailLogIn = ({ navigation }) => {
       </TouchableOpacity>
 
       {/* Sign Up Redirect */}
-      <TouchableOpacity onPress={() => navigation.navigate('Sign Up')}>
+      <TouchableOpacity onPress={() => navigation.navigate('Email Sign Up')}>
         <Text style={styles.link}>
           Don’t have an account? <Text style={styles.linkHighlight}>Sign Up</Text>
         </Text>

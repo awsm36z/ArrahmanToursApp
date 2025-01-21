@@ -24,7 +24,7 @@ async function onAppleButtonPress() {
   }
 }
 
-const SignUpScreen = ({ navigation }) => {
+const SignInScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to Arrahman Tour App</Text>
@@ -38,18 +38,18 @@ const SignUpScreen = ({ navigation }) => {
         onPress={onAppleButtonPress}
       />
 
-      {/* Placeholder for other sign-in methods */}
-      <TouchableOpacity
+      {/* Placeholder for Google Sign In button*/}
+      {/* <TouchableOpacity
         style={styles.signInButton}
         onPress={() => console.log('Google sign-in pressed')}
       >
         <Text style={styles.signInButtonText}>Sign in with Google</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       {/* Navigate to Email Sign-In Screen */}
       <TouchableOpacity
         style={styles.signInButton}
-        onPress={() => navigation.navigate('Email')}
+        onPress={() => navigation.navigate('Email Sign In')}
       >
         <Text style={styles.signInButtonText}>Sign in with Email</Text>
       </TouchableOpacity>
@@ -97,4 +97,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SignUpScreen;
+export default SignInScreen;

@@ -23,7 +23,7 @@ const EmailSignUp = ({ navigation }) => {
       // Firebase sign-up
       await auth().createUserWithEmailAndPassword(email, password);
       Alert.alert('Success', 'Account created successfully!');
-      navigation.navigate('Home'); // Navigate to Home after sign-up
+      navigation.navigate('Fill Name'); // Navigate to Home after sign-up
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -70,7 +70,7 @@ const EmailSignUp = ({ navigation }) => {
       </TouchableOpacity>
 
       {/* Already have an account */}
-      <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+      <TouchableOpacity onPress={() => navigation.navigate('Email Sign In')}>
         <Text style={styles.link}>Already have an account? Log in</Text>
       </TouchableOpacity>
     </View>

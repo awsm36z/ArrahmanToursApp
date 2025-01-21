@@ -1,45 +1,46 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import auth from '@react-native-firebase/auth';
 
-
-const AppStart = ({navigation}) => {
-    // Set an initializing state whilst Firebase connects
+const AppStart = ({ navigation }) => {
     const [initializing, setInitializing] = useState(true);
-    const [user, setUser] = useState();
+    const [user, setUser] = useState(null);
 
     // Handle user state changes
-    function onAuthStateChanged(user) {
-        setUser(user);
-        if (initializing) setInitializing(false);
-    }
-
     useEffect(() => {
-        const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-        return subscriber; // unsubscribe on unmount
+        const subscriber = auth().onAuthStateChanged((currentUser) => {
+            setUser(currentUser);
+            console.log('\n\nUser:', currentUser, "\n\n");
+            setInitializing(false); // Firebase authentication initialization is complete
+        });
+
+        return subscriber; // Cleanup subscription on unmount
     }, []);
 
+    // Navigate to Home if user is logged in
+    useEffect(() => {
+        if (!initializing && user) {
+            navigation.reset({
+                index: 0,
+                routes: [{ name: 'Home' }],
+            });
+        } else if (!initializing) {
+            navigation.navigate('Sign In');
+        }
+    }, [initializing, user, navigation]);
 
-
-    if (initializing) return (
-        <View style={styles.container}>
-            <Text>loading</Text>
-        </View>
-    );;
-
-    if (!user) {
-        if (navigation.canGoBack()) return null; // Prevent repeated navigation
-        navigation.navigate('Sign Up');
-        return null; // Ensure navigation happens only once
+    // Show a loading screen while Firebase initializes
+    if (initializing) {
+        return (
+            <View style={styles.container}>
+                <Text>Loading...</Text>
+            </View>
+        );
     }
-    
-    if (user) {
-        if (navigation.canGoBack()) return null; // Prevent repeated navigation
-        navigation.navigate('Home');
-        return null; // Ensure navigation happens only once
-    }
 
-}
+    // If no user is logged in, remain on the App Start screen
+    navigation.navigate
+};
 
 const styles = StyleSheet.create({
     container: {
@@ -49,7 +50,5 @@ const styles = StyleSheet.create({
         backgroundColor: '#F5F5F5',
     },
 });
-
-
 
 export default AppStart;
