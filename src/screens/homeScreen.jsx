@@ -7,7 +7,7 @@ const HomeScreen = ({navigation, props}) => {
     return (
         <View style={styles.container}>
             {/* <SoundPlayer soundFile="intro.mp3" /> */}
-            <Text>BYYYYY {props.user.email}</Text>
+            <Text>HIIII {props.user.email}</Text>
         </View>
     );
 };
