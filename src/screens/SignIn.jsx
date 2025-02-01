@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { AppleButton, appleAuth } from '@invertase/react-native-apple-authentication';
 import auth from '@react-native-firebase/auth';
 
@@ -29,15 +29,15 @@ const SignInScreen = ({ navigation }) => {
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to Arrahman Tour App</Text>
       <Text style={styles.subtitle}>Sign in to continue</Text>
-
-      {/* Apple Sign-In Button */}
-      <AppleButton
-        buttonStyle={AppleButton.Style.BLACK}
-        buttonType={AppleButton.Type.SIGN_IN}
-        style={styles.appleButton}
-        onPress={onAppleButtonPress}
-      />
-
+      {Platform.OS === 'ios' && (<View>
+        <AppleButton
+          buttonStyle={AppleButton.Style.BLACK}
+          buttonType={AppleButton.Type.SIGN_IN}
+          style={styles.appleButton}
+          onPress={onAppleButtonPress}
+        />
+      </View>
+      )}
       {/* Placeholder for Google Sign In button*/}
       {/* <TouchableOpacity
         style={styles.signInButton}
