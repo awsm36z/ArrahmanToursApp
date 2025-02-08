@@ -1,5 +1,5 @@
-import React, {useEffect} from 'react';
-import {View, Text, StyleSheet, TouchableOpacity, Platform} from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import {
   AppleButton,
   appleAuth,
@@ -11,32 +11,38 @@ import {
 } from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth';
 
-GoogleSignin.configure();
+GoogleSignin.configure({
+  iosClientId: "825006931797-gud8809i2cj9m49j7mabvrlomg9ghpl8.apps.googleusercontent.com"
+});
 
 async function onGoogleButtonPress() {
-  // Check if your device supports Google Play
-  await GoogleSignin.hasPlayServices({showPlayServicesUpdateDialog: true});
-  // Get the users ID token
-  const signInResult = await GoogleSignin.signIn();
+  console.log("Google Sign-In button pressed");
+  try {
+    console.log("Step 1: Checking Play Services");
+    await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+    console.log("Step 2: Signing in");
+    const signInResult = await GoogleSignin.signIn();
+    console.log("signInResult:", signInResult);
 
-  // Try the new style of google-sign in result, from v13+ of that module
-  idToken = signInResult.data?.idToken;
-  if (!idToken) {
-    // if you are using older versions of google-signin, try old style result
-    idToken = signInResult.idToken;
+    let idToken = signInResult.data?.idToken;
+    if (!idToken) {
+      idToken = signInResult.idToken;
+    }
+    if (!idToken) {
+      throw new Error('No ID token found');
+    }
+    console.log("Step 3: Creating credential");
+    const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+    console.log("googleCredential:", googleCredential);
+
+    console.log("Step 4: Signing in with credential");
+    const userCred = await auth().signInWithCredential(googleCredential);
+    console.log("Firebase user:", userCred.user);
+  } catch (error) {
+    console.error("Google Sign-In error:", error);
   }
-  if (!idToken) {
-    throw new Error('No ID token found');
-  }
-
-  // Create a Google credential with the token
-  const googleCredential = auth.GoogleAuthProvider.credential(
-    signInResult.data.idToken,
-  );
-
-  // Sign-in the user with the credential
-  return auth().signInWithCredential(googleCredential);
 }
+
 
 async function onAppleButtonPress() {
   try {
@@ -49,7 +55,7 @@ async function onAppleButtonPress() {
       throw new Error('Apple Sign-In failed - no identity token returned');
     }
 
-    const {identityToken, nonce} = appleAuthRequestResponse;
+    const { identityToken, nonce } = appleAuthRequestResponse;
     const appleCredential = auth.AppleAuthProvider.credential(
       identityToken,
       nonce,
@@ -61,7 +67,7 @@ async function onAppleButtonPress() {
   }
 }
 
-const SignInScreen = ({navigation}) => {
+const SignInScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to Arrahman Tour App</Text>

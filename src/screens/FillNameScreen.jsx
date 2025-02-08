@@ -1,27 +1,41 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert
+} from 'react-native';
 import auth from '@react-native-firebase/auth';
+import { createUser } from '../functions/authService';
 
 const FillNameScreen = ({ navigation }) => {
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [preferredName, setPreferredName] = useState('');
 
   const handleSaveName = async () => {
-    if (!name.trim()) {
-      Alert.alert('Error', 'Please enter your name.');
+    // Simple validation
+    if (!firstName.trim() || !lastName.trim() || !preferredName.trim()) {
+      Alert.alert('Error', 'Please fill in all fields.');
       return;
     }
 
     try {
       const user = auth().currentUser;
       if (user) {
-        await user.updateProfile({
-          displayName: name,
-        });
+        // Optionally set the user’s displayName to the preferredName
+        await user.updateProfile({ displayName: preferredName });
+
+        await createUser(firstName, lastName, preferredName);
+
         Alert.alert('Success', 'Name saved successfully!');
+        // Reset navigation stack and go to Home
         navigation.reset({
           index: 0,
           routes: [{ name: 'Home' }],
-        }); // Navigate to the Home screen
+        });
       }
     } catch (error) {
       Alert.alert('Error', error.message);
@@ -31,19 +45,39 @@ const FillNameScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Enter Your Name</Text>
+
       <TextInput
         style={styles.input}
-        placeholder="Full Name"
+        placeholder="First Name"
         placeholderTextColor="#888"
-        value={name}
-        onChangeText={setName}
+        value={firstName}
+        onChangeText={setFirstName}
       />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Last Name"
+        placeholderTextColor="#888"
+        value={lastName}
+        onChangeText={setLastName}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Preferred Name"
+        placeholderTextColor="#888"
+        value={preferredName}
+        onChangeText={setPreferredName}
+      />
+
       <TouchableOpacity style={styles.button} onPress={handleSaveName}>
         <Text style={styles.buttonText}>Save</Text>
       </TouchableOpacity>
     </View>
   );
 };
+
+export default FillNameScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -84,5 +118,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-export default FillNameScreen;
