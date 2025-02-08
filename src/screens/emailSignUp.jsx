@@ -22,7 +22,6 @@ const EmailSignUp = ({ navigation }) => {
     try {
       // Firebase sign-up
       await auth().createUserWithEmailAndPassword(email, password);
-      Alert.alert('Success', 'Account created successfully!');
       navigation.navigate('Fill Name'); // Navigate to Home after sign-up
     } catch (error) {
       Alert.alert('Error', error.message);

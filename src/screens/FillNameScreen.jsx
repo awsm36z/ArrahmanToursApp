@@ -25,11 +25,9 @@ const FillNameScreen = ({ navigation }) => {
     try {
       const user = auth().currentUser;
       if (user) {
-        // Optionally set the user’s displayName to the preferredName
-        await user.updateProfile({ displayName: preferredName });
-
         await createUser(firstName, lastName, preferredName);
-
+        
+        await user.updateProfile({ displayName: preferredName });
         Alert.alert('Success', 'Name saved successfully!');
         // Reset navigation stack and go to Home
         navigation.reset({

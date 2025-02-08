@@ -1,15 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Alert } from 'react-native';
 import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 
 const HomeScreen = ({ navigation }) => {
-  const [user, setUser] = useState(null); // Initialize user state
+  const [firestoreUser, setFirestoreUser] = useState(null);
 
   useEffect(() => {
-    // Get the currently authenticated user
+    // 1. Get the currently authenticated user
     const currentUser = auth().currentUser;
-    setUser(currentUser); // Set the user in state
+    if (!currentUser) {
+      console.error('No authenticated user found!');
+      return;
+    }
+
+    // 2. Reference the user's document in Firestore
+    const userDocRef = firestore().collection('users').doc(currentUser.uid);
+
+    // 3. Subscribe to the user document
+    const unsubscribe = userDocRef.onSnapshot(
+      docSnapshot => {
+        if (docSnapshot.exists) {
+          // docSnapshot.data() is your user object from Firestore
+          setFirestoreUser(docSnapshot.data());
+        } else {
+          console.log('No such user document in Firestore!');
+        }
+      },
+      error => {
+        console.error('Error fetching user document:', error);
+      }
+    );
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, []);
+
 
   const handleSignOut = async () => {
     try {
@@ -17,7 +43,7 @@ const HomeScreen = ({ navigation }) => {
       Alert.alert('Success', 'You have been logged out.');
       navigation.reset({
         index: 0,
-        routes: [{ name: 'App Start' }], // Navigate back to the App Start screen
+        routes: [{ name: 'App Start' }],
       });
     } catch (error) {
       Alert.alert('Error', error.message);
@@ -26,20 +52,29 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {user ? (
+      {firestoreUser ? (
         <>
-          <Text style={styles.text}>Welcome, {user.email}!</Text>
+          {/* Display fields from your Firestore user object */}
+          <Text style={styles.text}>
+            Welcome, {firestoreUser.name["preferredName"] || 'No name'}!
+          </Text>
+
           <TouchableOpacity style={styles.button} onPress={handleSignOut}>
             <Text style={styles.buttonText}>Sign Out</Text>
           </TouchableOpacity>
         </>
       ) : (
-        <Text style={styles.text}>No user is currently logged in.</Text>
+        <TouchableOpacity style={styles.button} onPress={handleSignOut}>
+        <Text style={styles.buttonText}>Sign Out</Text>
+      </TouchableOpacity>
       )}
     </View>
   );
 };
 
+export default HomeScreen;
+
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -65,5 +100,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-export default HomeScreen;

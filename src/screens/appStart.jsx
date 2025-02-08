@@ -19,15 +19,27 @@ const AppStart = ({ navigation }) => {
 
     // Navigate to Home if user is logged in
     useEffect(() => {
-        if (!initializing && user) {
-            navigation.reset({
+        if (!initializing) {
+          if (user) {
+            // Check if user.displayName is missing (or if Firestore data is missing)
+            if (!user.displayName) {
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Fill Name' }],
+              });
+            } else {
+              navigation.reset({
                 index: 0,
                 routes: [{ name: 'Home' }],
-            });
-        } else if (!initializing) {
+              });
+            }
+          } else {
+            // No user logged in, go to Sign In
             navigation.navigate('Sign In');
+          }
         }
-    }, [initializing, user, navigation]);
+      }, [initializing, user, navigation]);
+      
 
     // Show a loading screen while Firebase initializes
     if (initializing) {
