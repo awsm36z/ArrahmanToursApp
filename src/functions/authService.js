@@ -1,21 +1,41 @@
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 
-const checkCollectionExists = async (collectionName) => {
-  try {
-    const snapshot = await firestore().collection(collectionName).limit(1).get();
-    if (!snapshot.empty) {
-      console.log(`Collection '${collectionName}' exists.`);
-      return true;
-    } else {
-      console.log(`Collection '${collectionName}' does not exist or is empty.`);
-      return false;
+//sign out function
+export async function signOutUser() {
+  return auth().signOut();
+}
+
+//retrieve current user
+export function getCurrentUser() {
+  return auth().currentUser;
+}
+
+/**
+ * Subscribes to the Firestore user doc for the given uid for updated user data.
+ * @param {string} uid - The user's unique Firebase Auth UID
+ * @param {function} onData - Called with the Firestore data if doc exists (or null if missing)
+ * @param {function} onError - Called if an error occurs
+ * @returns {function} unsubscribe() - Call this to stop listening
+ */
+export function subscribeToUserDoc(uid, onData, onError) {
+  const userDocRef = firestore().collection('users').doc(uid);
+
+  return userDocRef.onSnapshot(
+    (docSnapshot) => {
+      if (docSnapshot.exists) {
+        onData(docSnapshot.data());
+      } else {
+        console.log('No user document found in Firestore for UID:', uid);
+        onData(null);
+      }
+    },
+    (error) => {
+      console.error('Error fetching user document:', error);
+      onError?.(error); // optional callback
     }
-  } catch (error) {
-    console.error('Error checking collection existence:', error);
-    return false;
-  }
-};
+  );
+}
 
 /**
  * Creates or updates a user document in Firestore.
@@ -23,14 +43,13 @@ const checkCollectionExists = async (collectionName) => {
  * it creates one using the user's UID. If it exists, it updates the document.
  */
 export async function createUser(firstName, lastName, preferredName) {
+
+
   const currentUser = auth().currentUser;
   if (!currentUser) {
     console.error('No authenticated user found.');
     return;
   }
-
-  // Optionally check if the collection exists (debug/logging)
-  await checkCollectionExists('users');
 
   // Reference to this user's doc
   const userDocRef = firestore().collection('users').doc(currentUser.uid);
@@ -40,7 +59,7 @@ export async function createUser(firstName, lastName, preferredName) {
 
     // Data we want to store/update
     const userData = {
-      displayName: currentUser.displayName,    // This was set to preferredName above
+      displayName: currentUser.displayName,   
       email: currentUser.email,
       is_verified: currentUser.emailVerified,
       phone: currentUser.phoneNumber,
@@ -66,3 +85,24 @@ export async function createUser(firstName, lastName, preferredName) {
     console.error('Error creating/updating user document:', error);
   }
 }
+
+
+
+
+
+//Old debugging function to check if a collection exists
+const checkCollectionExists = async (collectionName) => {
+  try {
+    const snapshot = await firestore().collection(collectionName).limit(1).get();
+    if (!snapshot.empty) {
+      console.log(`Collection '${collectionName}' exists.`);
+      return true;
+    } else {
+      console.log(`Collection '${collectionName}' does not exist or is empty.`);
+      return false;
+    }
+  } catch (error) {
+    console.error('Error checking collection existence:', error);
+    return false;
+  }
+};

@@ -1,45 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Alert } from 'react-native';
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
+import { subscribeToUserDoc } from '../functions/firestoreService'
+import { signOutUser, getCurrentUser, subscribeToUserDoc } from '../functions/authService';
 
 const HomeScreen = ({ navigation }) => {
   const [firestoreUser, setFirestoreUser] = useState(null);
 
   useEffect(() => {
     // 1. Get the currently authenticated user
-    const currentUser = auth().currentUser;
+    const currentUser = getCurrentUser();
     if (!currentUser) {
       console.error('No authenticated user found!');
       return;
     }
-
-    // 2. Reference the user's document in Firestore
-    const userDocRef = firestore().collection('users').doc(currentUser.uid);
-
-    // 3. Subscribe to the user document
-    const unsubscribe = userDocRef.onSnapshot(
-      docSnapshot => {
-        if (docSnapshot.exists) {
-          // docSnapshot.data() is your user object from Firestore
-          setFirestoreUser(docSnapshot.data());
-        } else {
-          console.log('No such user document in Firestore!');
-        }
-      },
-      error => {
-        console.error('Error fetching user document:', error);
-      }
+    // 2. Subscribe to the user doc,
+    const unsubscribe = subscribeToUserDoc(
+      currentUser.uid,
+      (data) => setFirestoreUser(data),
+      (error) => console.error(error)
     );
 
-    // Cleanup subscription on unmount
+    // Cleanup
     return () => unsubscribe();
   }, []);
 
 
   const handleSignOut = async () => {
     try {
-      await auth().signOut();
+      await signOutUser();
       Alert.alert('Success', 'You have been logged out.');
       navigation.reset({
         index: 0,
@@ -54,7 +42,6 @@ const HomeScreen = ({ navigation }) => {
     <View style={styles.container}>
       {firestoreUser ? (
         <>
-          {/* Display fields from your Firestore user object */}
           <Text style={styles.text}>
             Welcome, {firestoreUser.name["preferredName"] || 'No name'}!
           </Text>
@@ -65,8 +52,8 @@ const HomeScreen = ({ navigation }) => {
         </>
       ) : (
         <TouchableOpacity style={styles.button} onPress={handleSignOut}>
-        <Text style={styles.buttonText}>Sign Out</Text>
-      </TouchableOpacity>
+          <Text style={styles.buttonText}>Sign Out</Text>
+        </TouchableOpacity>
       )}
     </View>
   );
