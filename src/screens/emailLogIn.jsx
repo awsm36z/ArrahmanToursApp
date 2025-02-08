@@ -14,8 +14,7 @@ const EmailLogIn = ({ navigation }) => {
 
     try {
       await auth().signInWithEmailAndPassword(email, password);
-      Alert.alert('Success', 'Logged in successfully!');
-      navigation.navigate('Home'); // Navigate to Home on success
+      navigation.navigate('Home'); 
     } catch (error) {
       Alert.alert('Error', error.message);
     }
