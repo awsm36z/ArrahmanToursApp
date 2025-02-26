@@ -10,6 +10,8 @@ import TestScreen from './src/screens/testScreen';
 import EmailSignUp from './src/screens/emailSignUp';
 import EmailLogIn from './src/screens/emailLogIn';
 import FillNameScreen from './src/screens/FillNameScreen';
+import GroupSplashScreen from './src/screens/groupSplashScreen';
+import CreateGroupPage from './src/screens/createGroupPage';
 
 const Stack = createStackNavigator();
 
@@ -17,7 +19,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator 
-          initialRouteName="App Start"
+          initialRouteName="Create Group"
           screenOptions={{
           headerShown: false,
         }}>
@@ -28,6 +30,8 @@ export default function App() {
         <Stack.Screen name="Test" component={TestScreen} />
         <Stack.Screen name="Email Sign In" component={EmailLogIn} />
         <Stack.Screen name="Fill Name" component={FillNameScreen} />
+        <Stack.Screen name="Group Splash" component={GroupSplashScreen} />
+        <Stack.Screen name="Create Group" component={CreateGroupPage} />
       </Stack.Navigator>
     </NavigationContainer>
   );

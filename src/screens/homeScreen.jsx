@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Alert } from 'react-native';
 import { subscribeToUserDoc } from '../functions/firestoreService'
-import { signOutUser, getCurrentUser, subscribeToUserDoc } from '../functions/authService';
+import { signOutUser, getCurrentUser } from '../functions/authService';
 
 const HomeScreen = ({ navigation }) => {
   const [firestoreUser, setFirestoreUser] = useState(null);
