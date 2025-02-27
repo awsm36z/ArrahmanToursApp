@@ -15,7 +15,6 @@ export function subscribeToUserDoc(uid, onData, onError) {
       if (docSnapshot.exists) {
         onData(docSnapshot.data());
       } else {
-        console.log('No such user document in Firestore!');
         onData(null);
       }
     },
@@ -38,11 +37,10 @@ export function subscribeToUserDoc(uid, onData, onError) {
  */
 export async function createGroup(groupName) {
   const currentUser = auth().currentUser;
-  console.log(`User: ${currentUser}`);
 
   // Create a new document reference with an auto-generated ID
   const groupRef = firestore().collection('groups').doc();
-  
+
   const newGroup = {
     groupName: groupName,
     groupDocuments: [],
@@ -57,17 +55,14 @@ export async function createGroup(groupName) {
 
   try {
     await groupRef.set(newGroup);
-    console.log('Group created successfully with ID:', groupRef.id);
 
     // Add the group ID to the user's group list
     const userRef = firestore().collection('users').doc(currentUser.uid);
     await userRef.update({
       groups: firestore.FieldValue.arrayUnion(groupRef.id)
     });
-    console.log('Group added to user document successfully!');
   } catch (error) {
-    console.error('Error creating group:', error);
-  } 
+  }
 }
 
 
@@ -92,8 +87,44 @@ export async function addMember(groupId, newUserID, role) {
     await groupRef.update({
       groupMembers: firestore.FieldValue.arrayUnion(newUser)
     });
-    console.log('Member added successfully!');
   } catch (error) {
     console.error('Error adding member:', error);
+  }
+}
+
+
+/**
+ * Removes a member from the Firestore group document
+ * @param {string} groupId - The unique ID of the group
+ * @param {string} userID - The user's ID to remove
+ * @returns {Promise<void>}
+ */
+export async function removeMember(groupId, userID) {
+  try {
+    const groupRef = firestore().collection('groups').doc(groupId);
+    await groupRef.update({
+      groupMembers: firestore.FieldValue.arrayRemove(userID)
+    });
+  } catch (error) {
+    console.error('Error removing member:', error);
+  }
+}
+
+
+/**
+ * Get Group data by ID
+ * @param {string} groupId - The unique ID of the group
+ * @returns {Promise<object>} - The group data
+ */
+export async function getGroupData(groupId) {
+  try {
+    const groupRef = firestore().collection('groups').doc(groupId);
+    const groupDoc = await groupRef.get();
+
+    const data = groupDoc.data();
+    console.log(`groupDoc: ${JSON.stringify(data)}`);
+    return data;
+  } catch (error) {
+    console.error('Error fetching group data:', error);
   }
 }

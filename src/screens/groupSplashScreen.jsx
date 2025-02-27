@@ -1,232 +1,141 @@
-
 import React, { useState, useEffect } from 'react';
-import firestore from '@react-native-firebase/firestore';
-import {
-    View,
-    Text,
-    Image,
-    TouchableOpacity,
-    ScrollView,
-    StyleSheet,
-    Alert
-} from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, Alert, FlatList } from 'react-native';
+import { subscribeToUserDoc } from '../functions/firestoreService';
+import { signOutUser, getCurrentUser } from '../functions/authService';
 
-const GroupSplashScreen = ({navigation}) => {
-    const db = firestore();
-    const groupId = "group2023"; // adjust if needed or pass as a prop
-    const [groupData, setGroupData] = useState(null);
-    const [loading, setLoading] = useState(true);
+const HomeScreen = ({ navigation }) => {
+  const [firestoreUser, setFirestoreUser] = useState(null);
 
-    // Fetch the group document from Firestore on mount
-    useEffect(() => {
+  useEffect(() => {
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      console.error('No authenticated user found!');
+      return;
+    }
+    // Subscribe to the user's Firestore document
+    const unsubscribe = subscribeToUserDoc(
+      currentUser.uid,
+      (data) => setFirestoreUser(data),
+      (error) => console.error(error)
+    );
+    return () => unsubscribe();
+  }, []);
 
-        const fetchGroup = async () => {
-            try {
-                const groupDoc = firestore().collection('groups').doc(groupId);
-                return groupDoc.onSnapshot(
-                    (docSnapshot) => {
-                        if (docSnapshot.exists) {
-                            onData(docSnapshot.data());
-                        } else {
-                            console.log('No user document found in Firestore for UID:', uid);
-                            onData(null);
-                        }
-                    },
-                    (error) => {
-                        console.error('Error fetching user document:', error);
-                        onError?.(error); // optional callback
-                    }
-                );
-            } catch (error) {
-                console.error("Error fetching group data:", error);
-            }
-        }
-        fetchGroup();
-    }, [db, groupId]);
-
-    // Function to add a new member to the Firestore group document
-    const addMember = async () => {
-        const newUserID = prompt("Enter the new user's ID:");
-        if (!newUserID) return;
-        const role = prompt("Enter the new user's role (admin/member):", "member") || "member";
-        const newUser = {
-            userID: newUserID,
-            role,
-            userRef: `/users/${newUserID}` // assumes user documents are stored in /users
-        };
-
-        try {
-            const groupRef = doc(db, "groups", groupId);
-            await updateDoc(groupRef, {
-                users: arrayUnion(newUser)
-            });
-            // Update local state
-            setGroupData(prev => ({
-                ...prev,
-                users: [...(prev.users || []), newUser]
-            }));
-        } catch (error) {
-            console.error("Error adding member:", error);
-        }
-    };
-
-    // Function to remove a member from the Firestore group document
-    const removeMember = async (user) => {
-        if (window.confirm(`Are you sure you want to remove ${user.userID}?`)) {
-            try {
-                const groupRef = doc(db, "groups", groupId);
-                await updateDoc(groupRef, {
-                    users: arrayRemove(user)
-                });
-                setGroupData(prev => ({
-                    ...prev,
-                    users: prev.users.filter(u => u.userID !== user.userID)
-                }));
-            } catch (error) {
-                console.error("Error removing member:", error);
-            }
-        }
-    };
-
-    if (loading) {
-        return (
-          <View style={styles.loadingContainer}>
-            <Text>Loading group data...</Text>
-          </View>
-        );
+  // When the user document updates, check if they belong to a single group.
+  useEffect(() => {
+    if (firestoreUser && firestoreUser.groups) {
+      if (firestoreUser.groups.length === 1) {
+        // Automatically navigate if only one group exists
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'GroupPage', params: { groupId: firestoreUser.groups[0] } }],
+        });
       }
-    
-      return (
-        <View style={styles.container}>
-          <Text style={styles.header}>Group: {groupId}</Text>
-          <Text style={styles.subHeader}>Members</Text>
-          <ScrollView 
-            horizontal 
-            style={styles.scrollView} 
-            contentContainerStyle={styles.scrollContent}
-            showsHorizontalScrollIndicator={false}
-          >
-            {groupData && groupData.users && groupData.users.length > 0 ? (
-              groupData.users.map((user, index) => (
-                <View key={index} style={styles.memberCard}>
-                  <Image 
-                    source={{ uri: 'https://via.placeholder.com/100' }} 
-                    style={styles.avatar} 
-                  />
-                  <Text style={styles.userText}>{user.userID}</Text>
-                  <Text style={styles.userSubText}>{user.role}</Text>
-                  <TouchableOpacity 
-                    onPress={() => {
-                      Alert.alert(
-                        'Remove Member',
-                        `Are you sure you want to remove ${user.userID}?`,
-                        [
-                          { text: 'Cancel', style: 'cancel' },
-                          { text: 'OK', onPress: () => removeMember(user) }
-                        ]
-                      );
-                    }}
-                    style={styles.removeButton}
-                  >
-                    <Text style={styles.removeButtonText}>Remove</Text>
-                  </TouchableOpacity>
-                </View>
-              ))
-            ) : (
-              <Text>No members in this group.</Text>
-            )}
-          </ScrollView>
-          <TouchableOpacity 
-            onPress={addMember}
-            style={styles.addButton}
-          >
-            <Text style={styles.addButtonText}>Add Member</Text>
+    }
+  }, [firestoreUser, navigation]);
+
+  const handleSignOut = async () => {
+    try {
+      await signOutUser();
+      Alert.alert('Success', 'You have been logged out.');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'App Start' }],
+      });
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
+  };
+
+  // Render each group in the list if the user is in multiple groups.
+  const renderGroupItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.groupItem}
+      onPress={() => navigation.navigate('GroupPage', { groupId: item })}
+    >
+      <Text style={styles.groupText}>Group: {item}</Text>
+    </TouchableOpacity>
+  );
+
+  return (
+    <View style={styles.container}>
+      {firestoreUser ? (
+        <>
+          <Text style={styles.text}>
+            Welcome, {firestoreUser.name?.preferredName || 'No name'}!
+          </Text>
+          {firestoreUser.groups && firestoreUser.groups.length > 1 && (
+            <>
+              <Text style={styles.subHeader}>Your Groups</Text>
+              <FlatList
+                data={firestoreUser.groups}
+                keyExtractor={(item) => item}
+                renderItem={renderGroupItem}
+                contentContainerStyle={styles.groupsList}
+              />
+            </>
+          )}
+          {(!firestoreUser.groups || firestoreUser.groups.length === 0) && (
+            <Text style={styles.text}>You are not in any groups yet.</Text>
+          )}
+          <TouchableOpacity style={styles.button} onPress={handleSignOut}>
+            <Text style={styles.buttonText}>Sign Out</Text>
           </TouchableOpacity>
-        </View>
-      );
-    };
-    
-    const styles = StyleSheet.create({
-      loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-      },
-      container: {
-        padding: 20,
-        maxWidth: 800,
-        alignSelf: 'center',
-        flex: 1,
-        backgroundColor: '#f9f9f9',
-      },
-      header: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 10,
-      },
-      subHeader: {
-        fontSize: 20,
-        marginBottom: 10,
-      },
-      scrollView: {
-        marginBottom: 20,
-      },
-      scrollContent: {
-        alignItems: 'center',
-      },
-      memberCard: {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        padding: 10,
-        width: 140,
-        alignItems: 'center',
-        marginRight: 10,
-        backgroundColor: '#fff',
-        // Shadow properties for iOS
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        // Elevation for Android
-        elevation: 2,
-      },
-      avatar: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        marginBottom: 10,
-      },
-      userText: {
-        marginBottom: 5,
-        fontWeight: '500',
-      },
-      userSubText: {
-        fontSize: 12,
-        color: '#666',
-        marginBottom: 10,
-      },
-      removeButton: {
-        backgroundColor: '#e74c3c',
-        borderRadius: 4,
-        paddingVertical: 5,
-        paddingHorizontal: 10,
-      },
-      removeButtonText: {
-        color: '#fff',
-        fontSize: 12,
-      },
-      addButton: {
-        backgroundColor: '#2ecc71',
-        borderRadius: 4,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        alignSelf: 'center',
-      },
-      addButtonText: {
-        color: '#fff',
-        fontSize: 16,
-      },
-    });
-    
-    export default GroupSplashScreen;
+        </>
+      ) : (
+        <TouchableOpacity style={styles.button} onPress={handleSignOut}>
+          <Text style={styles.buttonText}>Sign Out</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+};
+
+export default HomeScreen;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 20,
+  },
+  text: {
+    fontSize: 18,
+    color: '#333',
+    marginBottom: 16,
+  },
+  subHeader: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginVertical: 12,
+  },
+  button: {
+    backgroundColor: '#6200EE',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  buttonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  groupsList: {
+    alignItems: 'center',
+  },
+  groupItem: {
+    backgroundColor: '#EEE',
+    padding: 12,
+    borderRadius: 8,
+    marginVertical: 8,
+    width: '100%',
+    alignItems: 'center',
+  },
+  groupText: {
+    fontSize: 16,
+    color: '#333',
+  },
+});

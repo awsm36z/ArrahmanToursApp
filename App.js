@@ -19,7 +19,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator 
-          initialRouteName="Create Group"
+          initialRouteName="App Start"
           screenOptions={{
           headerShown: false,
         }}>
