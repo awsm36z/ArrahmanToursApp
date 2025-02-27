@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import auth from '@react-native-firebase/auth';
+import { auth } from '../config/firebaseConfig'; // Ensure correct import
+import { createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from "firebase/auth";
 
 const EmailSignUp = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -8,7 +9,6 @@ const EmailSignUp = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const handleSignUp = async () => {
-    // Basic validation
     if (!email || !password || !confirmPassword) {
       Alert.alert('Error', 'Please fill in all fields.');
       return;
@@ -20,9 +20,41 @@ const EmailSignUp = ({ navigation }) => {
     }
 
     try {
-      // Firebase sign-up
-      await auth().createUserWithEmailAndPassword(email, password);
-      navigation.navigate('Fill Name'); // Navigate to Home after sign-up
+      // Create user
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Ensure user is fully initialized
+      await user.reload();
+
+      // Send verification email
+      await sendEmailVerification(user);
+
+      // Check email verification status before showing the alert
+      let emailVerified = false;
+
+      // Poll the user's email verification status
+      Alert.alert(
+        'Email Authentication',
+        'Please verify your email before proceeding.'
+      );
+
+      while (!emailVerified) {
+        await user.reload();  // Reload user data to get the latest status
+        emailVerified = user.emailVerified; // Check if email is verified
+
+        if (!emailVerified) {
+          await new Promise(resolve => setTimeout(resolve, 1000));  // Wait 1 second before re-checking
+        }
+      }
+
+      // Once email is verified, show the alert and proceed
+      Alert.alert(
+        'Email Verified',
+        'Your email has been verified. You can now proceed.',
+        [{ text: 'OK', onPress: () => navigation.navigate('Fill Name') }]
+      );
+
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -123,3 +155,6 @@ const styles = StyleSheet.create({
 });
 
 export default EmailSignUp;
+
+
+

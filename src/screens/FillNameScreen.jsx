@@ -7,42 +7,54 @@ import {
   StyleSheet,
   Alert
 } from 'react-native';
-import auth from '@react-native-firebase/auth';
-import { createUser } from '../functions/authService';
+import { auth } from '../config/firebaseConfig'; // Use initialized Firebase
+import { createUser } from '../functions/authService'; // Ensure createUser function is imported
+import { updateProfile } from "firebase/auth";
+import phoneValidator from 'phone'; // Import the phone validator library
 
 const FillNameScreen = ({ navigation }) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [preferredName, setPreferredName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState(''); // New state for phone number
 
   const handleSaveName = async () => {
-    // Simple validation
-    if (!firstName.trim() || !lastName.trim() || !preferredName.trim()) {
-      Alert.alert('Error', 'Please fill in all fields.');
-      return;
-    }
-
-    try {
-      const user = auth().currentUser;
-      if (user) {
-        await createUser(firstName, lastName, preferredName);
-        
-        await user.updateProfile({ displayName: preferredName });
-        Alert.alert('Success', 'Name saved successfully!');
-        // Reset navigation stack and go to Home
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Home' }],
-        });
+      if (!firstName.trim() || !lastName.trim() || !preferredName.trim() || !phoneNumber.trim()) {
+          Alert.alert('Error', 'Please fill in all fields.');
+          return;
       }
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
+
+      // Validate phone number
+      const phoneValidation = phoneValidator(phoneNumber);
+      if (!phoneValidation.isValid) {
+          Alert.alert('Error', 'Please enter a valid phone number.');
+          return;
+      }
+
+      try {
+          const user = auth.currentUser; // Get logged-in user
+          if (!user) {
+              Alert.alert('Error', 'No user found. Please sign in again.');
+              return;
+          }
+
+          // Save user data including phone number
+          await createUser(user.uid, firstName, lastName, preferredName, phoneNumber);
+
+          // Correct way to update profile
+          await updateProfile(user, { displayName: preferredName });
+
+          Alert.alert('Success', 'Name and phone number saved successfully!');
+          navigation.navigate('Home'); // Navigate to the Home screen after saving
+      } catch (error) {
+          console.error('Error updating user profile:', error);
+          Alert.alert('Error', 'An error occurred while saving your information.');
+      }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Enter Your Name</Text>
+      <Text style={styles.title}>Fill out your information</Text>
 
       <TextInput
         style={styles.input}
@@ -66,6 +78,16 @@ const FillNameScreen = ({ navigation }) => {
         placeholderTextColor="#888"
         value={preferredName}
         onChangeText={setPreferredName}
+      />
+
+      {/* Phone Number Input */}
+      <TextInput
+        style={styles.input}
+        placeholder="Phone Number"
+        placeholderTextColor="#888"
+        keyboardType="phone-pad"
+        value={phoneNumber}
+        onChangeText={setPhoneNumber}
       />
 
       <TouchableOpacity style={styles.button} onPress={handleSaveName}>
@@ -116,3 +138,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+

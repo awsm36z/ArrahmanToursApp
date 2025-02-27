@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import auth from '@react-native-firebase/auth';
+import { auth } from '../config/firebaseConfig';
+import { signInWithEmailAndPassword } from "firebase/auth"; // Import the function correctly
+
 
 const EmailLogIn = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -13,8 +15,8 @@ const EmailLogIn = ({ navigation }) => {
     }
 
     try {
-      await auth().signInWithEmailAndPassword(email, password);
-      navigation.navigate('Home'); 
+      await signInWithEmailAndPassword(auth, email, password);
+      navigation.navigate('Home');
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -56,6 +58,12 @@ const EmailLogIn = ({ navigation }) => {
           Don’t have an account? <Text style={styles.linkHighlight}>Sign Up</Text>
         </Text>
       </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => navigation.navigate('Change Password')}>
+                <Text style={styles.link}>
+                  Forgot Password? <Text style={styles.linkHighlight}>Change Password</Text>
+                </Text>
+        </TouchableOpacity>
     </View>
   );
 };

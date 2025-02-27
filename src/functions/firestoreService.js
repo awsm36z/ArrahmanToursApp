@@ -1,27 +1,22 @@
-import firestore from '@react-native-firebase/firestore';
+import { db, doc, collection } from '../config/firebaseConfig'; // Ensure correct imports
+import { getDoc, onSnapshot } from "firebase/firestore"; // Import required Firestore functions
 
-/**
- * Subscribes to the Firestore user doc for the given uid.
- * @param {string} uid - The user's unique Firebase Auth UID
- * @param {function} onData - Called with the Firestore data if doc exists (or null if missing)
- * @param {function} onError - Called if an error occurs
- * @returns {function} unsubscribe() - Call this to stop listening
- */
 export function subscribeToUserDoc(uid, onData, onError) {
-  const userDocRef = firestore().collection('users').doc(uid);
+  const userDocRef = doc(collection(db, 'users'), uid); // Correct Firestore reference
 
-  const unsubscribe = userDocRef.onSnapshot(
-    docSnapshot => {
-      if (docSnapshot.exists) {
+  const unsubscribe = onSnapshot(
+    userDocRef,
+    (docSnapshot) => {
+      if (docSnapshot.exists()) {
         onData(docSnapshot.data());
       } else {
         console.log('No such user document in Firestore!');
         onData(null);
       }
     },
-    error => {
+    (error) => {
       console.error('Error fetching user document:', error);
-      onError(error);
+      if (onError) onError(error);
     }
   );
 

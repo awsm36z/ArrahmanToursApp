@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import auth from '@react-native-firebase/auth';
+import { auth } from '../config/firebaseConfig'; // Use initialized Firebase
+import { onAuthStateChanged } from "firebase/auth"; // Import correct method
 
 const AppStart = ({ navigation }) => {
     const [initializing, setInitializing] = useState(true);
@@ -8,38 +9,30 @@ const AppStart = ({ navigation }) => {
 
     // Handle user state changes
     useEffect(() => {
-        const subscriber = auth().onAuthStateChanged((currentUser) => {
+        const subscriber = onAuthStateChanged(auth, (currentUser) => {
             setUser(currentUser);
             console.log('\n\nUser:', currentUser, "\n\n");
-            setInitializing(false); // Firebase authentication initialization is complete
+            setInitializing(false);
         });
 
         return subscriber; // Cleanup subscription on unmount
     }, []);
 
     // Navigate to Home if user is logged in
-    useEffect(() => {
-        if (!initializing) {
-          if (user) {
-            // Check if user.displayName is missing (or if Firestore data is missing)
-            if (!user.displayName) {
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Fill Name' }],
-              });
-            } else {
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Home' }],
-              });
-            }
-          } else {
-            // No user logged in, go to Sign In
-            navigation.navigate('Sign In');
-          }
-        }
-      }, [initializing, user, navigation]);
-      
+   useEffect(() => {
+     if (!initializing) {
+       if (user) {
+         if (!user.emailVerified) {
+           navigation.reset({ index: 0, routes: [{ name: 'Sign In' }] });
+         } else {
+           navigation.navigate('Sign In');
+         }
+       } else {
+         navigation.navigate('Sign In');
+       }
+     }
+   }, [initializing, user, navigation]);
+
 
     // Show a loading screen while Firebase initializes
     if (initializing) {
