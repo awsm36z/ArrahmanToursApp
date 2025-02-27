@@ -10,13 +10,15 @@ import TestScreen from './src/screens/testScreen';
 import EmailSignUp from './src/screens/emailSignUp';
 import EmailLogIn from './src/screens/emailLogIn';
 import FillNameScreen from './src/screens/FillNameScreen';
+import TwoFactorAuth from './src/screens/TwoFactorAuth';
+import ChangePassword from './src/screens/changePassword';
 
 const Stack = createStackNavigator();
 
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator 
+      <Stack.Navigator
           initialRouteName="App Start"
           screenOptions={{
           headerShown: false,
@@ -28,7 +30,10 @@ export default function App() {
         <Stack.Screen name="Test" component={TestScreen} />
         <Stack.Screen name="Email Sign In" component={EmailLogIn} />
         <Stack.Screen name="Fill Name" component={FillNameScreen} />
+        <Stack.Screen name="Two Factor Auth" component={TwoFactorAuth} />
+        <Stack.Screen name="Change Password" component={ChangePassword} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
+

@@ -1,29 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Alert } from 'react-native';
-import { subscribeToUserDoc } from '../functions/firestoreService'
-import { signOutUser, getCurrentUser, subscribeToUserDoc } from '../functions/authService';
+import { subscribeToUserDoc } from '../functions/firestoreService';
+import { signOutUser, getCurrentUser } from '../functions/authService';
 
 const HomeScreen = ({ navigation }) => {
   const [firestoreUser, setFirestoreUser] = useState(null);
 
   useEffect(() => {
-    // 1. Get the currently authenticated user
-    const currentUser = getCurrentUser();
+    const currentUser = getCurrentUser(); // Call the function correctly
+
     if (!currentUser) {
       console.error('No authenticated user found!');
       return;
     }
-    // 2. Subscribe to the user doc,
-    const unsubscribe = subscribeToUserDoc(
-      currentUser.uid,
-      (data) => setFirestoreUser(data),
-      (error) => console.error(error)
-    );
 
-    // Cleanup
-    return () => unsubscribe();
+    console.log('User:', currentUser);
   }, []);
-
 
   const handleSignOut = async () => {
     try {
@@ -43,7 +35,7 @@ const HomeScreen = ({ navigation }) => {
       {firestoreUser ? (
         <>
           <Text style={styles.text}>
-            Welcome, {firestoreUser.name["preferredName"] || 'No name'}!
+            Welcome, {firestoreUser?.name?.preferredName || 'No name'}!
           </Text>
 
           <TouchableOpacity style={styles.button} onPress={handleSignOut}>
@@ -60,6 +52,7 @@ const HomeScreen = ({ navigation }) => {
 };
 
 export default HomeScreen;
+
 
 // Styles
 const styles = StyleSheet.create({

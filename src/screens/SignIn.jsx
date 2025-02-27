@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import {
   AppleButton,
@@ -7,9 +7,9 @@ import {
 import {
   GoogleSignin,
   GoogleSigninButton,
-  statusCodes,
 } from '@react-native-google-signin/google-signin';
-import auth from '@react-native-firebase/auth';
+import { auth } from '../config/firebaseConfig'; // Ensure correct import
+import { GoogleAuthProvider, signInWithCredential } from "firebase/auth"; // Import correct Firebase methods
 
 GoogleSignin.configure({
   iosClientId: "825006931797-gud8809i2cj9m49j7mabvrlomg9ghpl8.apps.googleusercontent.com"
@@ -17,53 +17,28 @@ GoogleSignin.configure({
 
 async function onGoogleButtonPress() {
   console.log("Google Sign-In button pressed");
+
   try {
     console.log("Step 1: Checking Play Services");
     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+
     console.log("Step 2: Signing in");
     const signInResult = await GoogleSignin.signIn();
     console.log("signInResult:", signInResult);
 
-    let idToken = signInResult.data?.idToken;
-    if (!idToken) {
-      idToken = signInResult.idToken;
-    }
+    let idToken = signInResult.idToken;
     if (!idToken) {
       throw new Error('No ID token found');
     }
+
     console.log("Step 3: Creating credential");
-    const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-    console.log("googleCredential:", googleCredential);
+    const googleCredential = GoogleAuthProvider.credential(idToken); // ✅ Corrected
 
     console.log("Step 4: Signing in with credential");
-    const userCred = await auth().signInWithCredential(googleCredential);
+    const userCred = await signInWithCredential(auth, googleCredential); // ✅ Corrected
     console.log("Firebase user:", userCred.user);
   } catch (error) {
     console.error("Google Sign-In error:", error);
-  }
-}
-
-
-async function onAppleButtonPress() {
-  try {
-    const appleAuthRequestResponse = await appleAuth.performRequest({
-      requestedOperation: appleAuth.Operation.LOGIN,
-      requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
-    });
-
-    if (!appleAuthRequestResponse.identityToken) {
-      throw new Error('Apple Sign-In failed - no identity token returned');
-    }
-
-    const { identityToken, nonce } = appleAuthRequestResponse;
-    const appleCredential = auth.AppleAuthProvider.credential(
-      identityToken,
-      nonce,
-    );
-
-    await auth().signInWithCredential(appleCredential);
-  } catch (error) {
-    console.error('Apple sign-in error:', error);
   }
 }
 
@@ -72,27 +47,45 @@ const SignInScreen = ({ navigation }) => {
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to Arrahman Tour App</Text>
       <Text style={styles.subtitle}>Sign in to continue</Text>
-      {
-        //if platform is ios, show apple sign in button
-        Platform.OS === 'ios' ? (
-          <View>
-            <AppleButton
-              buttonStyle={AppleButton.Style.BLACK}
-              buttonType={AppleButton.Type.SIGN_IN}
-              style={styles.appleButton}
-              onPress={onAppleButtonPress}
-            />
-          </View>
-        ) : null
-      }
 
-      {/*Google Sign In button*/}
+      {/* Apple Sign-In (for iOS users) */}
+      {Platform.OS === 'ios' && (
+        <View>
+          <AppleButton
+            buttonStyle={AppleButton.Style.BLACK}
+            buttonType={AppleButton.Type.SIGN_IN}
+            style={styles.appleButton}
+            onPress={async () => {
+              try {
+                const appleAuthRequestResponse = await appleAuth.performRequest({
+                  requestedOperation: appleAuth.Operation.LOGIN,
+                  requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
+                });
+
+                if (!appleAuthRequestResponse.identityToken) {
+                  throw new Error('Apple Sign-In failed - no identity token returned');
+                }
+
+                const { identityToken, nonce } = appleAuthRequestResponse;
+                const appleCredential = auth.AppleAuthProvider.credential(
+                  identityToken,
+                  nonce,
+                );
+
+                await auth.signInWithCredential(appleCredential);
+              } catch (error) {
+                console.error('Apple sign-in error:', error);
+              }
+            }}
+          />
+        </View>
+      )}
+
+      {/* Google Sign-In Button */}
       <GoogleSigninButton
         size={GoogleSigninButton.Size.Wide}
         color={GoogleSigninButton.Color.Dark}
-        onPress={() => {
-          onGoogleButtonPress();
-        }}
+        onPress={onGoogleButtonPress}
       />
 
       {/* Navigate to Email Sign-In Screen */}
@@ -130,7 +123,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   signInButton: {
-    backgroundColor: '#4285F4', // Google blue for demo
+    backgroundColor: '#4285F4',
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 24,
@@ -146,3 +139,4 @@ const styles = StyleSheet.create({
 });
 
 export default SignInScreen;
+
